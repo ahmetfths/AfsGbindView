@@ -23,7 +23,7 @@ Thank you for your interest in contributing to AfsGbindView! This document provi
 1. **Fork the repository** on GitHub
 2. **Clone your fork**:
    ```bash
-   git clone https://github.com/yourusername/AfsGbindView.git
+   git clone https://github.com/ahmetfths/AfsGbindView.git
    cd AfsGbindView
    ```
 
@@ -253,8 +253,8 @@ def test_running_mean_calculation():
 
 If you have questions about contributing:
 
-- Check existing [Issues](https://github.com/yourusername/AfsGbindView/issues)
-- Start a [Discussion](https://github.com/yourusername/AfsGbindView/discussions)
+- Check existing [Issues](https://github.com/ahmetfths/AfsGbindView/issues)
+- Start a [Discussion](https://github.com/ahmetfths/AfsGbindView/discussions)
 - Contact the maintainers
 
 ## 🎉 Recognition

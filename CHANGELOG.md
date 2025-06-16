@@ -5,7 +5,7 @@ All notable changes to AfsGbindView will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2024-12-19
+## [2.0.0] - 2024-03-19
 
 ### Added
 - **Multi-ligand Comparison Mode**: Compare up to 6 ligands simultaneously
@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - More robust file parsing and validation
 - Comprehensive documentation and code comments
 
-## [1.0.0] - 2024-12-01
+## [1.0.0] - 2024-03-01
 
 ### Added
 - **Initial Release**: Basic MM-GBSA trajectory visualization

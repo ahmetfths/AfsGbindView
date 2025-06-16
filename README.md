@@ -43,7 +43,7 @@ A powerful, interactive web application for visualizing and analyzing Molecular 
 
 1. **Clone the repository**:
 ```bash
-git clone https://github.com/yourusername/AfsGbindView.git
+git clone https://github.com/ahmetfths/AfsGbindView.git
 cd AfsGbindView
 ```
 
@@ -179,7 +179,7 @@ We welcome contributions! Please follow these steps:
 
 ```bash
 # Clone your fork
-git clone https://github.com/yourusername/AfsGbindView.git
+git clone https://github.com/ahmetfths/AfsGbindView.git
 
 # Install dependencies
 pip install -r requirements.txt
@@ -203,8 +203,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📞 Support
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/AfsGbindView/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/AfsGbindView/discussions)
+- **Issues**: [GitHub Issues](https://github.com/ahmetfths/AfsGbindView/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/ahmetfths/AfsGbindView/discussions)
 - **Email**: fatihsahincadd@gmail.com
 
 ## 🔄 Version History

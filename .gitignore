@@ -163,13 +163,13 @@ cython_debug/
 
 # Project specific
 data/
-examples/
 temp/
 *.csv
 *.png
 *.txt
 !requirements.txt
 !README.txt
+!examples/*.csv
 
 # OS generated files
 .DS_Store
