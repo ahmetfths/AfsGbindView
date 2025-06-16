@@ -1,4 +1,20 @@
-streamlit
-pandas
-matplotlib
-scipy 
+# Core dependencies for AfsGbindView
+streamlit>=1.28.0
+pandas>=1.5.0
+matplotlib>=3.6.0
+numpy>=1.21.0
+scipy>=1.9.0
+
+# Additional dependencies for improved functionality
+plotly>=5.0.0  # Alternative plotting backend (optional)
+openpyxl>=3.0.0  # Excel file support (optional)
+
+# Font support (Linux compatibility)
+fonttools>=4.0.0
+
+# Development dependencies (optional)
+# Uncomment for development work
+# pytest>=7.0.0
+# black>=22.0.0
+# flake8>=5.0.0
+# mypy>=0.991 

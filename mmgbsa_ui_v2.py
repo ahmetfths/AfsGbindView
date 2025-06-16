@@ -45,7 +45,13 @@ DEFAULT_SETTINGS = {
     "running_mean_width": 2.0,
     "running_mean_style": "solid",
     "comparison_mode": False,
-    "max_ligands": 4
+    "max_ligands": 4,
+    "plot_title": "ΔGbind vs Time (ns)",
+    "x_label": "Time (ns)",
+    "y_label": "ΔGbind (kcal/mol)",
+    "legend_position": "best",
+    "frame_legend_label": "Frame",
+    "mean_legend_label": "Mean"
 }
 
 # Color palette for comparison mode
@@ -70,9 +76,8 @@ def generate_random_color():
     return f"#{np.random.randint(0, 16777215):06x}"
 
 def parse_ligand_id(title: str) -> str:
-    """Extract a short ligand ID (e.g. ZINC…) from title column; fallback to first token."""
-    m = re.search(r"(ZINC[0-9A-Za-z_]+)", title or "")
-    return m.group(1) if m else (title.split()[0] if title else "Ligand")
+    """Return the entire title as the ligand ID."""
+    return title if title else "Ligand"
 
 
 def compute_stats(series: pd.Series):
@@ -94,29 +99,35 @@ def calculate_confidence_interval(data, confidence=0.95):
     return mean, ci[0], ci[1]
 
 
-def plot_ligand_data(ax, time_ns, dg, running, settings, ligand_id, show_error_bars=False, yerr=None, ci_lower=None, ci_upper=None, color=None, frame_color=None, frame_style=None, running_style=None, show_frames=True, running_mean_width=3.0):
+def plot_ligand_data(ax, time_ns, dg, running, settings, ligand_id, show_error_bars=False, yerr=None, ci_lower=None, ci_upper=None, color=None, frame_color=None, frame_style=None, running_style=None, show_frames=True, running_mean_width=None):
     """Helper function to plot a single ligand's data."""
     frame_color = frame_color or settings['frame_color']
     running_color = color or settings['running_mean_color']
+    running_mean_width = running_mean_width or settings['running_mean_width']
+    # Set default line widths
+    frame_linewidth = 2.0
+    mean_linewidth = running_mean_width
+    # Legend labels
+    frame_label = 'ΔGbind / frame'
+    mean_label = f"{settings.get('window_size', 10)} - running mean"
     if show_frames:
         ax.plot(
-            time_ns, 
-            dg, 
+            time_ns, dg,
             color=frame_color,
             alpha=settings['frame_alpha'],
             linestyle=frame_style,
-            linewidth=1.0,
-            label=f"{ligand_id} / frame"
+            linewidth=frame_linewidth,
+            label=frame_label
         )
-    # Always plot the running mean line
     ax.plot(
-        time_ns, 
-        running, 
+        time_ns, running,
         color=running_color,
-        linewidth=running_mean_width,
+        linewidth=mean_linewidth,
         linestyle=running_style,
-        label=f"{ligand_id} ({settings['window_size']}-frame mean)"
+        label=mean_label
     )
+    # Always show both legend entries
+    ax.legend(loc=settings.get('legend_position', 'best'))
     # Add error bars if requested
     if settings['show_running_mean'] and show_error_bars:
         try:
@@ -170,6 +181,80 @@ else:
     for key, value in DEFAULT_SETTINGS.items():
         if key not in st.session_state.settings:
             st.session_state.settings[key] = value
+
+# Track last ligand name for legend label defaults
+if 'last_ligand_id' not in st.session_state:
+    st.session_state['last_ligand_id'] = None
+if 'last_frame_label_default' not in st.session_state:
+    st.session_state['last_frame_label_default'] = None
+if 'last_mean_label_default' not in st.session_state:
+    st.session_state['last_mean_label_default'] = None
+
+# Track last window size for mean label default
+if 'last_window_size' not in st.session_state:
+    st.session_state['last_window_size'] = None
+
+# --- Robust legend label logic (final, professional version) ---
+current_window_size = st.session_state.settings.get('window_size', 10)
+default_frame_label = 'ΔGbind / frame'
+default_mean_label = f'{current_window_size} - running mean'
+
+# Frame label logic
+frame_label = st.session_state.settings.get('frame_legend_label', None)
+if not frame_label or frame_label.strip() == '':
+    frame_label = default_frame_label
+
+# Mean label logic
+mean_label = st.session_state.settings.get('mean_legend_label', None)
+if not mean_label or mean_label.strip() == '' or mean_label == f"{st.session_state.get('last_window_size', 10)} - running mean":
+    mean_label = default_mean_label
+st.session_state['last_window_size'] = current_window_size
+
+# File upload section (moved before sidebar to update titles properly)
+comparison_mode = st.session_state.settings.get('comparison_mode', False)
+
+if comparison_mode:
+    st.subheader("Upload Multiple Ligand Data")
+    uploaded_files = st.file_uploader(
+        "Upload thermal_MMGBSA.csv files",
+        type="csv",
+        accept_multiple_files=True
+    )
+    max_ligands = st.session_state.settings.get('max_ligands', 4)
+    if len(uploaded_files) > max_ligands:
+        st.warning(f"Maximum {max_ligands} ligands allowed. Only the first {max_ligands} files will be used.")
+        uploaded_files = uploaded_files[:max_ligands]
+    # --- Read each file ONCE and store DataFrame and ligand_id ---
+    file_data = []
+    for idx, csv_file in enumerate(uploaded_files):
+        try:
+            csv_file.seek(0)
+            df = pd.read_csv(csv_file)
+            ligand_id = parse_ligand_id(df.get("title", pd.Series(["Ligand"])).iloc[0])
+            file_data.append({'df': df, 'ligand_id': ligand_id, 'csv_file': csv_file})
+        except Exception:
+            ligand_id = f"Ligand_{idx+1}"
+            file_data.append({'df': None, 'ligand_id': ligand_id, 'csv_file': csv_file})
+else:
+    csv_file = st.file_uploader("Upload thermal_MMGBSA.csv", type="csv")
+    uploaded_files = [csv_file] if csv_file else []
+    file_data = []
+    if csv_file:
+        try:
+            csv_file.seek(0)
+            df = pd.read_csv(csv_file)
+            ligand_id = parse_ligand_id(df.get("title", pd.Series(["Ligand"])).iloc[0])
+            file_data.append({'df': df, 'ligand_id': ligand_id, 'csv_file': csv_file})
+            # Update plot title with ligand name when file is uploaded (single ligand mode)
+            default_title_with_ligand = f"ΔGbind vs Time (ns) - {ligand_id}"
+            if (st.session_state.settings['plot_title'] == "ΔGbind vs Time (ns)" or 
+                not st.session_state.settings['plot_title'] or
+                st.session_state.settings['plot_title'].startswith("ΔGbind vs Time (ns) - ") and 
+                " - " in st.session_state.settings['plot_title']):
+                st.session_state.settings['plot_title'] = default_title_with_ligand
+        except Exception:
+            ligand_id = "Ligand_1"
+            file_data.append({'df': None, 'ligand_id': ligand_id, 'csv_file': csv_file})
 
 # Add sidebar for visualization controls
 with st.sidebar:
@@ -240,6 +325,32 @@ with st.sidebar:
     
     # Style settings
     st.subheader("Style Settings")
+    
+    # Plot labels
+    st.subheader("Plot Labels")
+    if st.session_state.settings['comparison_mode']:
+        st.session_state.settings['plot_title'] = st.text_input(
+            "Plot Title",
+            value=st.session_state.settings.get('plot_title', "ΔGbind Comparison"),
+            help="Customize the plot title"
+        )
+    else:
+        st.session_state.settings['plot_title'] = st.text_input(
+            "Plot Title",
+            value=st.session_state.settings['plot_title'],
+            help="Customize the plot title"
+        )
+    st.session_state.settings['x_label'] = st.text_input(
+        "X-axis Label",
+        value=st.session_state.settings.get('x_label', "Time (ns)"),
+        help="Customize the X-axis label"
+    )
+    st.session_state.settings['y_label'] = st.text_input(
+        "Y-axis Label",
+        value=st.session_state.settings.get('y_label', "ΔGbind (kcal/mol)"),
+        help="Customize the Y-axis label"
+    )
+    
     st.session_state.settings['frame_color'] = st.color_picker(
         "Frame Color",
         value=st.session_state.settings['frame_color']
@@ -264,9 +375,9 @@ with st.sidebar:
     )
     st.session_state.settings['running_mean_width'] = st.slider(
         "Running Mean Line Width",
-        1.0, 5.0,
+        0.1, 5.0,
         value=st.session_state.settings['running_mean_width'],
-        step=0.5
+        step=0.1
     )
     st.session_state.settings['running_mean_style'] = st.selectbox(
         "Running Mean Line Style",
@@ -276,44 +387,19 @@ with st.sidebar:
         )
     )
 
+    # Legend settings
+    st.subheader("Legend Settings")
+    st.session_state.settings['legend_position'] = st.selectbox(
+        "Legend Position",
+        ["best", "upper right", "upper left", "lower left", "lower right", "center left", "center right", "lower center", "upper center", "center"],
+        index=["best", "upper right", "upper left", "lower left", "lower right", "center left", "center right", "lower center", "upper center", "center"].index(
+            st.session_state.settings.get('legend_position', "best")
+        ),
+        help="Choose where to place the legend"
+    )
+
 # Use settings from session state
 settings = st.session_state.settings
-
-# File upload section
-if settings['comparison_mode']:
-    st.subheader("Upload Multiple Ligand Data")
-    uploaded_files = st.file_uploader(
-        "Upload thermal_MMGBSA.csv files",
-        type="csv",
-        accept_multiple_files=True
-    )
-    if len(uploaded_files) > settings['max_ligands']:
-        st.warning(f"Maximum {settings['max_ligands']} ligands allowed. Only the first {settings['max_ligands']} files will be used.")
-        uploaded_files = uploaded_files[:settings['max_ligands']]
-    # --- Read each file ONCE and store DataFrame and ligand_id ---
-    file_data = []
-    for idx, csv_file in enumerate(uploaded_files):
-        try:
-            csv_file.seek(0)
-            df = pd.read_csv(csv_file)
-            ligand_id = parse_ligand_id(df.get("title", pd.Series(["Ligand"])).iloc[0])
-            file_data.append({'df': df, 'ligand_id': ligand_id, 'csv_file': csv_file})
-        except Exception:
-            ligand_id = f"Ligand_{idx+1}"
-            file_data.append({'df': None, 'ligand_id': ligand_id, 'csv_file': csv_file})
-else:
-    csv_file = st.file_uploader("Upload thermal_MMGBSA.csv", type="csv")
-    uploaded_files = [csv_file] if csv_file else []
-    file_data = []
-    if csv_file:
-        try:
-            csv_file.seek(0)
-            df = pd.read_csv(csv_file)
-            ligand_id = parse_ligand_id(df.get("title", pd.Series(["Ligand"])).iloc[0])
-            file_data.append({'df': df, 'ligand_id': ligand_id, 'csv_file': csv_file})
-        except Exception:
-            ligand_id = "Ligand_1"
-            file_data.append({'df': None, 'ligand_id': ligand_id, 'csv_file': csv_file})
 
 md_length_ns = st.number_input("Total MD time (ns)", value=100, min_value=1)
 
@@ -425,7 +511,7 @@ if file_data and md_length_ns > 0:
         plot_ligand_data(
             ax, time_ns, dg, running, settings, ligand_id,
             settings['show_error_bars'], yerr, ci_lower, ci_upper,
-            color=running_color, frame_color=frame_color, frame_style=frame_style, running_style=running_style, show_frames=show_frames, running_mean_width=3.0
+            color=running_color, frame_color=frame_color, frame_style=frame_style, running_style=running_style, show_frames=show_frames, running_mean_width=settings['running_mean_width']
         )
         # Store statistics
         stats = compute_stats(dg)
@@ -436,24 +522,13 @@ if file_data and md_length_ns > 0:
         st.error("No valid data to plot. Please check your input files.")
         st.stop()
     # Set plot properties
-    ax.set_xlabel("Time (ns)")
-    ax.set_ylabel("ΔGbind (kcal/mol)")
-    if settings['comparison_mode']:
-        ax.set_title("ΔGbind Comparison")
-    else:
-        ax.set_title(f"ΔGbind vs Time (ns) — {all_stats[0]['ligand_id']}")
-    # Only show running mean lines in the legend
-    handles, labels = ax.get_legend_handles_labels()
-    new_handles = []
-    new_labels = []
-    for h, l in zip(handles, labels):
-        if 'mean' in l:
-            new_handles.append(h)
-            new_labels.append(l)
-    if new_handles:
-        ax.legend(new_handles, new_labels)
-    else:
-        ax.legend()
+    ax.set_xlabel(st.session_state.settings['x_label'])
+    ax.set_ylabel(st.session_state.settings['y_label'])
+    title = st.session_state.settings['plot_title']
+    if not title:
+        title = "ΔGbind vs Time (ns)"
+    ax.set_title(title)
+    
     fig.tight_layout()
 
     # Display plot
