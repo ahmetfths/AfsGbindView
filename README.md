@@ -126,25 +126,40 @@ title,r_psp_MMGBSA_dG_Bind,frame
 
 ### Example 1: Basic Single Ligand Analysis
 ```python
-# Upload file: ligand_A_mmgbsa.csv
+# Upload file: ex1.csv
 # Set MD time: 100 ns
-# Result: Automatic title "ΔGbind vs Time (ns) - ligand_A"
+# Result: Automatic title "ΔGbind vs Time (ns) - Ligand_A"
+# Features:
+# - 1000 frames of binding energy data
+# - Binding energies ranging from -35 to -55 kcal/mol
+# - Running mean analysis with customizable window
 ```
 
 ### Example 2: Multi-Ligand Comparison
 ```python
-# Upload files: compound_1.csv, compound_2.csv, compound_3.csv
+# Upload files: ex1.csv, ex2.csv
 # Enable comparison mode
 # Result: Overlay plot with distinct colors and statistical comparison
+# Features:
+# - Compare two ligands with 1000 frames each
+# - Different binding energy ranges for each ligand
+# - Comprehensive statistical comparison table
 ```
 
 ### Example 3: Publication-Ready Plot
 ```python
+# Upload file: ex1.csv
 # Customize colors to journal requirements
 # Add error bars (95% CI)
 # Export high-resolution PNG
 # Download statistics as CSV for supplementary data
+# Features:
+# - Professional color scheme
+# - Error analysis with confidence intervals
+# - High-resolution export options
 ```
+
+> **Note:** Example files (`ex1.csv` and `ex2.csv`) are provided in the `examples` directory for testing and demonstration purposes. Each file contains 1000 frames of binding energy data with realistic variations.
 
 ## 🔧 Technical Details
 
