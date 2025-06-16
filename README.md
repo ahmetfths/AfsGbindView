@@ -246,4 +246,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Made with ❤️ for the computational chemistry community** 
+**Made with ❤️ for the drug discovery community** 
