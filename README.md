@@ -181,8 +181,8 @@ We welcome contributions! Please follow these steps:
 # Clone your fork
 git clone https://github.com/yourusername/AfsGbindView.git
 
-# Install development dependencies
-pip install -r requirements-dev.txt
+# Install dependencies
+pip install -r requirements.txt
 
 # Run tests
 python -m pytest tests/
