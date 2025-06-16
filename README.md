@@ -180,9 +180,13 @@ We welcome contributions! Please follow these steps:
 ```bash
 # Clone your fork
 git clone https://github.com/ahmetfths/AfsGbindView.git
+cd AfsGbindView
 
-# Install dependencies
+# Install user dependencies (for running the app)
 pip install -r requirements.txt
+
+# Install development dependencies (for contributing, testing, linting, etc.)
+pip install -r requirements-dev.txt
 
 # Run tests
 python -m pytest tests/
@@ -190,6 +194,10 @@ python -m pytest tests/
 # Start development server
 streamlit run mmgbsa_ui_v2.py --server.runOnSave true
 ```
+
+> **Note:**
+> - Use `requirements.txt` for end users who just want to run the app.
+> - Use `requirements-dev.txt` for contributors/developers who want to run tests, lint, or contribute code.
 
 ## 📝 License
 
